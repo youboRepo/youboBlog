@@ -1,0 +1,91 @@
+server:
+  port: 8090
+
+# 生产环境需要修改为服务器ip或域名
+# 后端服务URL https://api.naccl.top/blog
+# 后台管理URL https://admin.naccl.top
+# 前台界面URL https://naccl.top
+blog:
+  name: youbo's blog
+  api: http://localhost:${server.port}
+  cms: http://localhost:8080
+  view: http://localhost:8081
+  
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://150.158.170.135:3306/nblog?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=GMT%2B8
+    username: root
+    password: root
+    
+  redis:
+    host: 150.158.170.135
+    password: 130848
+    port: 6222
+    database: 0
+    timeout: 10000ms
+  
+  # 如果选择邮箱提醒方式，则会在收到评论后向填写的邮箱自身发送一封邮件(提醒自己)；如果选择tg，则填写的邮箱只作为提醒访客的发送方
+  # 阿里云邮箱，port=25在Windows系统下有效，Linux系统需要改为465并将下面两行取消注释，其它邮箱服务商配置参考关键字"spring mail 服务器"
+  # spring.mail.properties.mail.smtp.socketFactory.port=465
+  # spring.mail.properties.mail.smtp.ssl.enable=true   
+  mail:
+    host: smtp.mxhichina.com
+    port: 25
+    username: 
+    password: 
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+    
+logging:
+  level:
+    root: info
+    top:
+      naccl: debug
+  file: blog-api/log/blog-dev
+  
+# 1000 * 60 * 60 * 24 * 3
+# 生产环境务必修改此配置，否则无法保证token安全性
+token:
+  expireTime: 25900000
+  secretKey: abcdefghijklmnopqrstuvwxyz
+  
+# 博主接收评论提醒方式: Telegram=tg 邮箱=mail (访客评论提醒固定为邮箱方式) 
+comment:
+  notify:
+    channel: mail
+  # 新评论是否默认公开
+  default-open: true
+  
+tg:
+  bot:
+    api: https://api.telegram.org/bot
+    token:
+    chat-id:
+    use-proxy: false
+    use-reverse-proxy: true
+    reverse-proxy-url: https://tg-api-open.naccl.workers.dev
+    
+http:
+  proxy:
+    server:
+      host: 127.0.0.1
+      port: 7890
+      timeout: 10000
+      
+upload:
+  github:
+    token:
+    username:
+    repos:
+    repos-path: 
+  
+  upyun:
+    bucket-name:
+    username:
+    password:
+    path:
+    domain: 
