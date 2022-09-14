@@ -5,7 +5,7 @@ import com.youbo.util.upload.UploadUtils;
 /**
  * 文件上传方式
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-23
  */
 public interface FileUploadChannel {

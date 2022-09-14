@@ -3,7 +3,7 @@ package com.youbo.constant;
 /**
  * 站点设置常量
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-28
  */
 public class SiteSettingConstants {

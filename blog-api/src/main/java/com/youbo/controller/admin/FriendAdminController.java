@@ -20,7 +20,7 @@ import java.util.Map;
 
 /**
  * @Description: 友链页面后台管理
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-09-08
  */
 @RestController

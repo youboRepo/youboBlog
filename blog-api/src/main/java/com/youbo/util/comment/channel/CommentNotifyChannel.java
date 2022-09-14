@@ -5,7 +5,7 @@ import com.youbo.model.dto.Comment;
 /**
  * 评论提醒方式
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-22
  */
 public interface CommentNotifyChannel {

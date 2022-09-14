@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * @Description: UserAgent解析工具类
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-11-30
  */
 @Component

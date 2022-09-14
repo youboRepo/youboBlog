@@ -8,7 +8,7 @@ import java.util.List;
 
 /**
  * @Description: 登录日志持久层接口
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-12-03
  */
 @Mapper

@@ -7,7 +7,7 @@ import lombok.ToString;
 
 /**
  * @Description: GitHub徽标
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-08-09
  */
 @NoArgsConstructor

@@ -22,7 +22,7 @@ import com.youbo.util.JwtUtils;
 
 /**
  * @Description: 动态
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-08-25
  */
 @RestController

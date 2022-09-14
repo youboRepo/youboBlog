@@ -12,7 +12,7 @@ import java.util.Date;
 
 /**
  * @Description: JWT工具类
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-09-02
  */
 @Component

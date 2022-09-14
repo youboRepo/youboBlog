@@ -3,7 +3,7 @@ package com.youbo.enums;
 /**
  * 评论页面枚举类
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-22
  */
 public enum CommentPageEnum {

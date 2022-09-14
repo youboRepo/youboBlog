@@ -22,7 +22,7 @@ import java.util.List;
 
 /**
  * @Description: JWT请求过滤器
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-07-21
  */
 public class JwtFilter extends GenericFilterBean {

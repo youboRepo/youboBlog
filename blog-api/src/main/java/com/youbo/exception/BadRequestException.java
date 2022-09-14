@@ -2,7 +2,7 @@ package com.youbo.exception;
 
 /**
  * @Description: 非法请求异常
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-07-23
  */
 

@@ -2,7 +2,7 @@ package com.youbo.constant;
 
 /**
  * @Description: Redis key配置
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-09-27
  */
 public class RedisKeyConstants {

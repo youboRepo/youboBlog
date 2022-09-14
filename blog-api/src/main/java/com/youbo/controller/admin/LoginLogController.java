@@ -14,7 +14,7 @@ import com.youbo.service.LoginLogService;
 
 /**
  * @Description: 登录日志后台管理
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-12-03
  */
 @RestController

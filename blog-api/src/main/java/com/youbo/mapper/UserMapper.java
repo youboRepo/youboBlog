@@ -6,7 +6,7 @@ import com.youbo.entity.User;
 
 /**
  * @Description: 用户持久层接口
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-07-19
  */
 @Mapper

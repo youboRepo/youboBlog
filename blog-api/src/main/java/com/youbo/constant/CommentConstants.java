@@ -3,7 +3,7 @@ package com.youbo.constant;
 /**
  * 评论相关常量
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-22
  */
 public class CommentConstants {

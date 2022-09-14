@@ -2,9 +2,9 @@ server:
   port: 8090
 
 # 生产环境需要修改为服务器ip或域名
-# 后端服务URL https://api.naccl.top/blog
-# 后台管理URL https://admin.naccl.top
-# 前台界面URL https://naccl.top
+# 后端服务URL https://api.youbo.top/blog
+# 后台管理URL https://admin.youbo.top
+# 前台界面URL https://youbo.top
 blog:
   name: youbo's blog
   api: http://localhost:${server.port}
@@ -44,7 +44,7 @@ logging:
   level:
     root: info
     top:
-      naccl: debug
+      youbo: debug
   file: blog-api/log/blog-dev
   
 # 1000 * 60 * 60 * 24 * 3
@@ -67,7 +67,7 @@ tg:
     chat-id:
     use-proxy: false
     use-reverse-proxy: true
-    reverse-proxy-url: https://tg-api-open.naccl.workers.dev
+    reverse-proxy-url: https://tg-api-open.youbo.workers.dev
     
 http:
   proxy:

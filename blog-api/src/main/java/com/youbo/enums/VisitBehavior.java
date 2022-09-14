@@ -3,7 +3,7 @@ package com.youbo.enums;
 /**
  * 访问行为枚举类
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-08
  */
 public enum VisitBehavior {

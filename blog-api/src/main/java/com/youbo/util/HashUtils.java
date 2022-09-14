@@ -6,7 +6,7 @@ import org.springframework.util.DigestUtils;
 
 /**
  * @Description: Hash工具类
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-11-17
  */
 public class HashUtils {

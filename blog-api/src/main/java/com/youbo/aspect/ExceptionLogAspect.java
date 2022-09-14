@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  * @Description: AOP记录异常日志
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-12-03
  */
 @Component
@@ -36,7 +36,7 @@ public class ExceptionLogAspect {
 	/**
 	 * 配置切入点
 	 */
-	@Pointcut("execution(* top.naccl.controller..*.*(..))")
+	@Pointcut("execution(* com.youbo.controller..*.*(..))")
 	public void logPointcut() {
 	}
 

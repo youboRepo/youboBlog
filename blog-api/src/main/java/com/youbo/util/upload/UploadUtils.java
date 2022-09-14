@@ -15,7 +15,7 @@ import com.youbo.util.upload.channel.FileUploadChannel;
 
 /**
  * @Description: 图片下载保存工具类
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2021-11-11
  */
 @Component

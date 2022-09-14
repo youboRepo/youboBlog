@@ -2,7 +2,7 @@ package com.youbo.exception;
 
 /**
  * @Description: 持久化异常
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-08-14
  */
 

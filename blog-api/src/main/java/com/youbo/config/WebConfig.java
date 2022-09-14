@@ -11,7 +11,7 @@ import com.youbo.config.properties.UploadProperties;
 
 /**
  * @Description: 配置CORS跨域支持、拦截器
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-07-22
  */
 @Configuration

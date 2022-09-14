@@ -14,7 +14,7 @@ import com.youbo.service.ExceptionLogService;
 
 /**
  * @Description: 异常日志后台管理
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-12-04
  */
 @RestController

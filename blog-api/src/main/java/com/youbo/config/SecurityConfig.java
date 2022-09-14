@@ -15,7 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * @Description: Spring Security配置类
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-07-19
  */
 @Configuration

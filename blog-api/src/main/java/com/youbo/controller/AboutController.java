@@ -10,7 +10,7 @@ import com.youbo.service.AboutService;
 
 /**
  * @Description: 关于我页面
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-08-31
  */
 @RestController

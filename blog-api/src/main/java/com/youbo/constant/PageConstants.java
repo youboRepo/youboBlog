@@ -3,7 +3,7 @@ package com.youbo.constant;
 /**
  * 页面相关常量
  *
- * @author: Naccl
+ * @author: youbo
  * @date: 2022-01-23
  */
 public class PageConstants {

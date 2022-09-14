@@ -5,7 +5,7 @@ import org.commonmark.node.Delimited;
 
 /**
  * @Description: A heimu node containing text and other inline nodes nodes as children.
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-05-13
  */
 public class Heimu extends CustomNode implements Delimited {

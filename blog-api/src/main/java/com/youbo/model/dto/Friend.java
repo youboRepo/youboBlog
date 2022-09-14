@@ -7,7 +7,7 @@ import lombok.ToString;
 
 /**
  * @Description: 友链DTO
- * @Author: Naccl
+ * @Author: youbo
  * @Date: 2020-09-08
  */
 @NoArgsConstructor
