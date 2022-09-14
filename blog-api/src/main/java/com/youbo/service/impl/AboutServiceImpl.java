@@ -1,8 +1,9 @@
 package com.youbo.service.impl;
 
 import com.youbo.constant.RedisKeyConstants;
-import com.youbo.exception.PersistenceException;
+import com.youbo.jdbc.impl.MyServiceImpl;
 import com.youbo.mapper.AboutMapper;
+import com.youbo.query.AboutQuery;
 import com.youbo.service.AboutService;
 import com.youbo.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +15,7 @@ import com.youbo.util.markdown.MarkdownUtils;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
 /**
  * @Description: 关于我页面业务层实现
@@ -22,10 +23,7 @@ import java.util.Set;
  * @Date: 2020-08-31
  */
 @Service
-public class AboutServiceImpl implements AboutService
-{
-	@Autowired
-    AboutMapper aboutMapper;
+public class AboutServiceImpl extends MyServiceImpl<AboutMapper, About> implements AboutService {
 	@Autowired
     RedisService redisService;
 
@@ -36,7 +34,7 @@ public class AboutServiceImpl implements AboutService
 		if (aboutInfoMapFromRedis != null) {
 			return aboutInfoMapFromRedis;
 		}
-		List<About> abouts = aboutMapper.getList();
+		List<About> abouts = this.list();
 		Map<String, String> aboutInfoMap = new HashMap<>(16);
 		for (About about : abouts) {
 			if ("content".equals(about.getNameEn())) {
@@ -50,7 +48,7 @@ public class AboutServiceImpl implements AboutService
 
 	@Override
 	public Map<String, String> getAboutSetting() {
-		List<About> abouts = aboutMapper.getList();
+		List<About> abouts = this.list();
 		Map<String, String> map = new HashMap<>(16);
 		for (About about : abouts) {
 			map.put(about.getNameEn(), about.getValue());
@@ -59,25 +57,21 @@ public class AboutServiceImpl implements AboutService
 	}
 
 	@Override
-	public void updateAbout(Map<String, String> map) {
-		Set<String> keySet = map.keySet();
-		for (String key : keySet) {
-			updateOneAbout(key, map.get(key));
-		}
-		deleteAboutRedisCache();
-	}
-
 	@Transactional(rollbackFor = Exception.class)
-	public void updateOneAbout(String nameEn, String value) {
-		if (aboutMapper.updateAbout(nameEn, value) != 1) {
-			throw new PersistenceException("修改失败");
-		}
+	public void updateAbout(List<About> abouts) {
+		this.update(abouts);
+		deleteAboutRedisCache();
 	}
 
 	@Override
 	public boolean getAboutCommentEnabled() {
-		String commentEnabledString = aboutMapper.getAboutCommentEnabled();
-		return Boolean.parseBoolean(commentEnabledString);
+		return  Optional.ofNullable(this.get(About::getNameEn, "commentEnabled")).map(About::getValue).map(Boolean::parseBoolean).orElse(false);
+	}
+
+	@Override
+	public List<About> getAboutInfos(AboutQuery query)
+	{
+		return this.list(About::getNameEn, query.getNameEns());
 	}
 
 	/**

@@ -1,5 +1,9 @@
 package com.youbo.service;
 
+import com.youbo.entity.About;
+import com.youbo.query.AboutQuery;
+
+import java.util.List;
 import java.util.Map;
 
 public interface AboutService {
@@ -7,7 +11,9 @@ public interface AboutService {
 
 	Map<String, String> getAboutSetting();
 
-	void updateAbout(Map<String, String> map);
+	void updateAbout(List<About> abouts);
 
 	boolean getAboutCommentEnabled();
+
+	List<About> getAboutInfos(AboutQuery query);
 }

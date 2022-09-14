@@ -1,0 +1,36 @@
+package com.youbo.jdbc.injector.method;
+
+import com.baomidou.mybatisplus.core.injector.AbstractMethod;
+import com.baomidou.mybatisplus.core.metadata.TableInfo;
+import com.baomidou.mybatisplus.core.toolkit.sql.SqlScriptUtils;
+import org.apache.ibatis.executor.keygen.NoKeyGenerator;
+import org.apache.ibatis.mapping.MappedStatement;
+import org.apache.ibatis.mapping.SqlSource;
+
+/**
+ * 插入一条数据（替换已经存在）
+ *
+ * @author liunancun
+ * @date 2020/7/30
+ */
+public class Replace extends AbstractMethod
+{
+    /**
+     * 序列化标识
+     */
+    private static final long serialVersionUID = 1L;
+
+    @Override
+    public MappedStatement injectMappedStatement(Class<?> mapperClass, Class<?> modelClass, TableInfo tableInfo)
+    {
+        String columnScript = SqlScriptUtils
+                .convertTrim(tableInfo.getAllInsertSqlColumnMaybeIf(null), LEFT_BRACKET, RIGHT_BRACKET, null, COMMA);
+        String valuesScript = SqlScriptUtils
+                .convertTrim(tableInfo.getAllInsertSqlPropertyMaybeIf(null), LEFT_BRACKET, RIGHT_BRACKET, null, COMMA);
+        String sql = String.format("<script>\nREPLACE INTO %s %s VALUES %s\n</script>", tableInfo
+                .getTableName(), columnScript, valuesScript);
+        SqlSource sqlSource = languageDriver.createSqlSource(configuration, sql, modelClass);
+        return this
+                .addInsertMappedStatement(mapperClass, modelClass, "replace", sqlSource, new NoKeyGenerator(), null, null);
+    }
+}
