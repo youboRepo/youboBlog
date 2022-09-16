@@ -2,6 +2,8 @@ package com.youbo.controller;
 
 import com.youbo.annotation.VisitLogger;
 import com.youbo.constant.JwtConstants;
+import com.youbo.model.dto.BlogCustom;
+import com.youbo.query.BlogQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -121,12 +123,14 @@ public class BlogController {
 	 */
 	@VisitLogger(VisitBehavior.SEARCH)
 	@GetMapping("/searchBlog")
-	public Result searchBlog(@RequestParam String query) {
+	public Result searchBlog(@RequestParam BlogQuery query) {
 		//校验关键字字符串合法性
-		if (StringUtils.isEmpty(query) || StringUtils.hasSpecialChar(query) || query.trim().length() > 20) {
+		if (StringUtils.isEmpty(query.getContent()) || StringUtils.hasSpecialChar(query.getContent()) || query.getContent().trim().length() > 20) {
 			return Result.error("参数错误");
 		}
-		List<SearchBlog> searchBlogs = blogService.getSearchBlogListByQueryAndIsPublished(query.trim());
-		return Result.ok("获取成功", searchBlogs);
+		query.setIsPublished(true);
+		query.setPassword("");
+		List<BlogCustom> blogs = blogService.getSearchBlogListByQueryAndIsPublished(query);
+		return Result.ok("获取成功", blogs);
 	}
 }

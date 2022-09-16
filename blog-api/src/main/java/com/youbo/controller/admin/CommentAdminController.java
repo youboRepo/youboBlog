@@ -3,6 +3,7 @@ package com.youbo.controller.admin;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.youbo.annotation.OperationLogger;
+import com.youbo.model.dto.BlogCustom;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,7 +62,7 @@ public class CommentAdminController {
 	 */
 	@GetMapping("/blogIdAndTitle")
 	public Result blogIdAndTitle() {
-		List<Blog> blogs = blogService.getIdAndTitleList();
+		List<BlogCustom> blogs = blogService.getIdAndTitleList();
 		return Result.ok("请求成功", blogs);
 	}
 

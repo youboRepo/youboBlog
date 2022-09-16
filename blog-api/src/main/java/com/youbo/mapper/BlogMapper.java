@@ -1,6 +1,8 @@
 package com.youbo.mapper;
 
-import com.youbo.model.dto.Blog;
+import com.youbo.entity.Blog;
+import com.youbo.jdbc.mapper.MyBaseMapper;
+import com.youbo.model.dto.BlogCustom;
 import org.apache.ibatis.annotations.Mapper;
 import org.springframework.stereotype.Repository;
 import com.youbo.model.dto.BlogView;
@@ -22,12 +24,13 @@ import java.util.List;
  */
 @Mapper
 @Repository
-public interface BlogMapper {
-	List<com.youbo.entity.Blog> getListByTitleAndCategoryId(String title, Integer categoryId);
+public interface BlogMapper extends MyBaseMapper<Blog>
+{
+	List<BlogCustom> getListByTitleAndCategoryId(String title, Integer categoryId);
 
 	List<SearchBlog> getSearchBlogListByQueryAndIsPublished(String query);
 
-	List<com.youbo.entity.Blog> getIdAndTitleList();
+	List<BlogCustom> getIdAndTitleList();
 
 	List<NewBlog> getNewBlogListByIsPublished();
 
@@ -49,7 +52,7 @@ public interface BlogMapper {
 
 	int deleteBlogTagByBlogId(Long blogId);
 
-	int saveBlog(Blog blog);
+	int saveBlog(BlogCustom blog);
 
 	int saveBlogTag(Long blogId, Long tagId);
 
@@ -69,7 +72,7 @@ public interface BlogMapper {
 
 	String getBlogPassword(Long blogId);
 
-	int updateBlog(Blog blog);
+	int updateBlog(BlogCustom blog);
 
 	int countBlog();
 

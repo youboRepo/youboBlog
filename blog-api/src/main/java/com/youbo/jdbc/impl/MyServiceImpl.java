@@ -21,10 +21,12 @@ import com.youbo.query.PageQuery;
 import com.youbo.util.BeanUtils;
 import com.youbo.util.StringUtils;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.ibatis.binding.MapperMethod;
 import org.springframework.util.Assert;
 
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -657,6 +659,56 @@ public class MyServiceImpl<M extends MyBaseMapper<E>, E> extends ServiceImpl<M, 
     }
 
     /**
+     * 根据条件获取指定字段的传输列表
+     *
+     * @param query   查询对象
+     * @param builder 构建方法
+     * @param clazz   传输的类
+     * @param <Q>     查询类型
+     * @param <D>     传输类型
+     * @param columns  要查询的字段
+     * @return 传输列表
+     */
+    protected <Q, D> List<D> list(Q query, Function<Q, LambdaQueryWrapper<E>> builder, Class<D> clazz, SFunction<E, ?>... columns)
+    {
+        LambdaQueryWrapper<E> queryWrapper = builder.apply(query);
+        queryWrapper.select(columns);
+        if (ArrayUtils.isNotEmpty(columns)) {
+            for (SFunction<E, ?> column : columns)
+            {
+                queryWrapper.select(column);
+            }
+        }
+        
+        List<E> entityList = this.list(queryWrapper);
+        return BeanUtils.clone(entityList, clazz);
+    }
+
+    /**
+     * 根据条件获取指定字段的传输列表
+     *
+     * @param query   查询对象
+     * @param builder 构建方法
+     * @param <Q>     查询类型
+     * @param <D>     传输类型
+     * @param columns  要查询的字段
+     * @return 传输列表
+     */
+    protected <Q, D> List<E> list(Q query, Function<Q, LambdaQueryWrapper<E>> builder, SFunction<E, ?>... columns)
+    {
+        LambdaQueryWrapper<E> queryWrapper = builder.apply(query);
+        queryWrapper.select(columns);
+        if (ArrayUtils.isNotEmpty(columns)) {
+            for (SFunction<E, ?> column : columns)
+            {
+                queryWrapper.select(column);
+            }
+        }
+
+        return this.list(queryWrapper);
+    }
+
+    /**
      * 根据条件获取实体列表
      *
      * @param column 条件字段
@@ -673,6 +725,25 @@ public class MyServiceImpl<M extends MyBaseMapper<E>, E> extends ServiceImpl<M, 
         LambdaQueryWrapper<E> queryWrapper = Wrappers.lambdaQuery();
         queryWrapper.eq(column, value);
         return this.list(queryWrapper);
+    }
+
+
+    /**
+     * 根据条件统计数量
+     *
+     * @param column 条件字段
+     * @param value  条件的值
+     * @return 数量
+     */
+    protected Integer count(SFunction<E, ?> column, Object value) {
+        if (ObjectUtil.hasNull(column, value) || "".equals(value))
+        {
+            return 0;
+        }
+
+        LambdaQueryWrapper<E> queryWrapper = Wrappers.lambdaQuery();
+        queryWrapper.eq(column, value);
+        return this.count(queryWrapper);
     }
 
     /**

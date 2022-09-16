@@ -1,6 +1,7 @@
 package com.youbo.service;
 
-import com.youbo.model.dto.Blog;
+import com.youbo.entity.Blog;
+import com.youbo.model.dto.BlogCustom;
 import com.youbo.model.dto.BlogVisibility;
 import com.youbo.model.vo.BlogDetail;
 import com.youbo.model.vo.BlogInfo;
@@ -8,18 +9,18 @@ import com.youbo.model.vo.NewBlog;
 import com.youbo.model.vo.PageResult;
 import com.youbo.model.vo.RandomBlog;
 import com.youbo.model.vo.SearchBlog;
+import com.youbo.query.BlogQuery;
+import com.youbo.query.PageDTO;
 
 import java.util.List;
 import java.util.Map;
 
 public interface BlogService {
-	List<com.youbo.entity.Blog> getListByTitleAndCategoryId(String title, Integer categoryId);
+	List<BlogCustom> getSearchBlogListByQueryAndIsPublished(BlogQuery query);
 
-	List<SearchBlog> getSearchBlogListByQueryAndIsPublished(String query);
+	List<BlogCustom> getIdAndTitleList();
 
-	List<com.youbo.entity.Blog> getIdAndTitleList();
-
-	List<NewBlog> getNewBlogListByIsPublished();
+	List<BlogCustom> getNewBlogListByIsPublished();
 
 	PageResult<BlogInfo> getBlogInfoListByIsPublished(Integer pageNum);
 
@@ -35,21 +36,19 @@ public interface BlogService {
 
 	void deleteBlogTagByBlogId(Long blogId);
 
-	void saveBlog(Blog blog);
+	void saveBlog(BlogCustom blog);
 
 	void saveBlogTag(Long blogId, Long tagId);
-
-	void updateBlogRecommendById(Long blogId, Boolean recommend);
-
+	
 	void updateBlogVisibilityById(Long blogId, BlogVisibility blogVisibility);
-
-	void updateBlogTopById(Long blogId, Boolean top);
+	
+	void updateBlogById(Blog blog);
 
 	void updateViewsToRedis(Long blogId);
 
-	void updateViews(Long blogId, Integer views);
+	void updateBlogsById(List<Blog> blogs);
 
-	com.youbo.entity.Blog getBlogById(Long id);
+	BlogCustom getBlogById(Long id);
 
 	String getTitleByBlogId(Long id);
 
@@ -57,7 +56,7 @@ public interface BlogService {
 
 	String getBlogPassword(Long blogId);
 
-	void updateBlog(Blog blog);
+	void updateBlog(BlogCustom blog);
 
 	int countBlogByIsPublished();
 
@@ -68,4 +67,6 @@ public interface BlogService {
 	Boolean getCommentEnabledByBlogId(Long blogId);
 
 	Boolean getPublishedByBlogId(Long blogId);
+
+    PageDTO<BlogCustom> getBlogList(BlogQuery query);
 }

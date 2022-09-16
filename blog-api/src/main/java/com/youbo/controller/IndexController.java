@@ -1,5 +1,6 @@
 package com.youbo.controller;
 
+import com.youbo.model.dto.BlogCustom;
 import com.youbo.service.SiteSettingService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -41,7 +42,7 @@ public class IndexController {
 	@GetMapping("/site")
 	public Result site() {
 		Map<String, Object> map = siteSettingService.getSiteInfo();
-		List<NewBlog> newBlogList = blogService.getNewBlogListByIsPublished();
+		List<BlogCustom> newBlogList = blogService.getNewBlogListByIsPublished();
 		List<Category> categoryList = categoryService.getCategoryNameList();
 		List<Tag> tagList = tagService.getTagListNotId();
 		List<RandomBlog> randomBlogList = blogService.getRandomBlogListByLimitNumAndIsPublishedAndIsRecommend();

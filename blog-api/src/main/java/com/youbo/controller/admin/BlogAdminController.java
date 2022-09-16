@@ -1,9 +1,11 @@
 package com.youbo.controller.admin;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.youbo.annotation.OperationLogger;
-import com.youbo.model.dto.Blog;
+import com.youbo.entity.Blog;
+import com.youbo.model.dto.BlogCustom;
+import com.youbo.query.BlogQuery;
+import com.youbo.query.PageDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +27,7 @@ import com.youbo.service.CommentService;
 import com.youbo.service.TagService;
 import com.youbo.util.StringUtils;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -40,33 +43,25 @@ import java.util.Map;
 @RequestMapping("/admin")
 public class BlogAdminController {
 	@Autowired
-	BlogService blogService;
+	private BlogService blogService;
 	@Autowired
-	CategoryService categoryService;
+	private CategoryService categoryService;
 	@Autowired
-	TagService tagService;
+	private TagService tagService;
 	@Autowired
-	CommentService commentService;
+	private CommentService commentService;
 
 	/**
 	 * 获取博客文章列表
 	 *
-	 * @param title      按标题模糊查询
-	 * @param categoryId 按分类id查询
-	 * @param pageNum    页码
-	 * @param pageSize   每页个数
+	 * @param query
 	 * @return
 	 */
 	@GetMapping("/blogs")
-	public Result blogs(@RequestParam(defaultValue = "") String title, @RequestParam(defaultValue = "") Integer categoryId, @RequestParam(defaultValue = "1") Integer pageNum, @RequestParam(defaultValue = "10") Integer pageSize) {
-		String orderBy = "create_time desc";
-		PageHelper.startPage(pageNum, pageSize, orderBy);
-		PageInfo<com.youbo.entity.Blog> pageInfo = new PageInfo<>(blogService.getListByTitleAndCategoryId(title, categoryId));
+	public Result blogs(@RequestParam BlogQuery query) {
+		PageDTO<BlogCustom> page = blogService.getBlogList(query);
 		List<Category> categories = categoryService.getCategoryList();
-		Map<String, Object> map = new HashMap<>(4);
-		map.put("blogs", pageInfo);
-		map.put("categories", categories);
-		return Result.ok("请求成功", map);
+		return Result.ok("请求成功", page).put("categories", categories);
 	}
 
 	/**
@@ -109,7 +104,10 @@ public class BlogAdminController {
 	@OperationLogger("更新博客置顶状态")
 	@PutMapping("/blog/top")
 	public Result updateTop(@RequestParam Long id, @RequestParam Boolean top) {
-		blogService.updateBlogTopById(id, top);
+		Blog blog = new Blog();
+		blog.setId(id);
+		blog.setIsTop(top);
+		blogService.updateBlogById(blog);
 		return Result.ok("操作成功");
 	}
 
@@ -123,7 +121,10 @@ public class BlogAdminController {
 	@OperationLogger("更新博客推荐状态")
 	@PutMapping("/blog/recommend")
 	public Result updateRecommend(@RequestParam Long id, @RequestParam Boolean recommend) {
-		blogService.updateBlogRecommendById(id, recommend);
+		Blog blog = new Blog();
+		blog.setId(id);
+		blog.setIsRecommend(recommend);
+		blogService.updateBlogById(blog);
 		return Result.ok("操作成功");
 	}
 
@@ -149,7 +150,7 @@ public class BlogAdminController {
 	 */
 	@GetMapping("/blog")
 	public Result getBlog(@RequestParam Long id) {
-		com.youbo.entity.Blog blog = blogService.getBlogById(id);
+		BlogCustom blog = blogService.getBlogById(id);
 		return Result.ok("获取成功", blog);
 	}
 
@@ -161,7 +162,7 @@ public class BlogAdminController {
 	 */
 	@OperationLogger("发布博客")
 	@PostMapping("/blog")
-	public Result saveBlog(@RequestBody Blog blog) {
+	public Result saveBlog(@RequestBody BlogCustom blog) {
 		return getResult(blog, "save");
 	}
 
@@ -173,7 +174,7 @@ public class BlogAdminController {
 	 */
 	@OperationLogger("更新博客")
 	@PutMapping("/blog")
-	public Result updateBlog(@RequestBody Blog blog) {
+	public Result updateBlog(@RequestBody BlogCustom blog) {
 		return getResult(blog, "update");
 	}
 
@@ -184,7 +185,7 @@ public class BlogAdminController {
 	 * @param type 添加或更新
 	 * @return
 	 */
-	private Result getResult(Blog blog, String type) {
+	private Result getResult(BlogCustom blog, String type) {
 		//验证普通字段
 		if (StringUtils.isEmpty(blog.getTitle(), blog.getFirstPicture(), blog.getContent(), blog.getDescription())
 				|| blog.getWords() == null || blog.getWords() < 0) {
@@ -234,8 +235,8 @@ public class BlogAdminController {
 				return Result.error("标签不正确");
 			}
 		}
-
-		Date date = new Date();
+		
+		LocalDateTime now = LocalDateTime.now();
 		if (blog.getReadTime() == null || blog.getReadTime() < 0) {
 			blog.setReadTime((int) Math.round(blog.getWords() / 200.0));//粗略计算阅读时长
 		}
@@ -243,8 +244,8 @@ public class BlogAdminController {
 			blog.setViews(0);
 		}
 		if ("save".equals(type)) {
-			blog.setCreateTime(date);
-			blog.setUpdateTime(date);
+			blog.setCreateTime(now);
+			blog.setUpdateTime(now);
 			User user = new User();
 			user.setId(1L);//个人博客默认只有一个作者
 			blog.setUser(user);
@@ -256,7 +257,7 @@ public class BlogAdminController {
 			}
 			return Result.ok("添加成功");
 		} else {
-			blog.setUpdateTime(date);
+			blog.setUpdateTime(now);
 			blogService.updateBlog(blog);
 			//关联博客和标签(维护 blog_tag 表)
 			blogService.deleteBlogTagByBlogId(blog.getId());

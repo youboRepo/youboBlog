@@ -1,24 +1,28 @@
 package com.youbo.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.youbo.constant.RedisKeyConstants;
+import com.youbo.entity.Blog;
 import com.youbo.exception.NotFoundException;
 import com.youbo.exception.PersistenceException;
-import com.youbo.model.dto.Blog;
+import com.youbo.jdbc.impl.MyServiceImpl;
+import com.youbo.model.dto.BlogCustom;
+import com.youbo.query.BlogQuery;
+import com.youbo.query.PageDTO;
+import org.apache.commons.lang3.BooleanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.youbo.mapper.BlogMapper;
-import com.youbo.model.dto.BlogView;
 import com.youbo.model.dto.BlogVisibility;
 import com.youbo.model.vo.ArchiveBlog;
 import com.youbo.model.vo.BlogDetail;
 import com.youbo.model.vo.BlogInfo;
-import com.youbo.model.vo.NewBlog;
 import com.youbo.model.vo.PageResult;
 import com.youbo.model.vo.RandomBlog;
-import com.youbo.model.vo.SearchBlog;
 import com.youbo.service.BlogService;
 import com.youbo.service.RedisService;
 import com.youbo.service.TagService;
@@ -30,6 +34,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @Description: 博客文章业务层实现
@@ -37,7 +42,7 @@ import java.util.Map;
  * @Date: 2020-07-29
  */
 @Service
-public class BlogServiceImpl implements BlogService {
+public class BlogServiceImpl extends MyServiceImpl<BlogMapper, Blog> implements BlogService {
 	@Autowired
 	BlogMapper blogMapper;
 	@Autowired
@@ -64,46 +69,49 @@ public class BlogServiceImpl implements BlogService {
 		//Redis中没有存储博客浏览量的Hash
 		if (!redisService.hasKey(redisKey)) {
 			//从数据库中读取并存入Redis
-			Map<Long, Integer> blogViewsMap = getBlogViewsMap();
+			Map<Long, Integer> blogViewsMap = this.getBlogViewsMap();
 			redisService.saveMapToHash(redisKey, blogViewsMap);
 		}
 	}
 
 	@Override
-	public List<com.youbo.entity.Blog> getListByTitleAndCategoryId(String title, Integer categoryId) {
-		return blogMapper.getListByTitleAndCategoryId(title, categoryId);
-	}
-
-	@Override
-	public List<SearchBlog> getSearchBlogListByQueryAndIsPublished(String query) {
-		List<SearchBlog> searchBlogs = blogMapper.getSearchBlogListByQueryAndIsPublished(query);
-		for (SearchBlog searchBlog : searchBlogs) {
+	public List<BlogCustom> getSearchBlogListByQueryAndIsPublished(BlogQuery query) {
+		
+		List<BlogCustom> blogs = this.list(query, this::setQueryWrapper, BlogCustom.class);
+		
+		for (BlogCustom searchBlog : blogs) {
 			String content = searchBlog.getContent();
 			int contentLength = content.length();
-			int index = content.indexOf(query) - 10;
+			int index = content.indexOf(query.getContent()) - 10;
 			index = index < 0 ? 0 : index;
 			int end = index + 21;//以关键字字符串为中心返回21个字
 			end = end > contentLength - 1 ? contentLength - 1 : end;
 			searchBlog.setContent(content.substring(index, end));
 		}
-		return searchBlogs;
+		return blogs;
 	}
 
 	@Override
-	public List<com.youbo.entity.Blog> getIdAndTitleList() {
-		return blogMapper.getIdAndTitleList();
+	public List<BlogCustom> getIdAndTitleList() {
+		BlogQuery query = new BlogQuery();
+		query.setIsQueryContent(false);
+		return this.list(query, this::setQueryWrapper, BlogCustom.class);
 	}
 
 	@Override
-	public List<NewBlog> getNewBlogListByIsPublished() {
+	public List<BlogCustom> getNewBlogListByIsPublished() {
 		String redisKey = RedisKeyConstants.NEW_BLOG_LIST;
-		List<NewBlog> newBlogListFromRedis = redisService.getListByValue(redisKey);
+		List<BlogCustom> newBlogListFromRedis = redisService.getListByValue(redisKey);
 		if (newBlogListFromRedis != null) {
 			return newBlogListFromRedis;
 		}
-		PageHelper.startPage(1, newBlogPageSize);
-		List<NewBlog> newBlogList = blogMapper.getNewBlogListByIsPublished();
-		for (NewBlog newBlog : newBlogList) {
+		
+		BlogQuery query = new BlogQuery();
+		query.setIsQueryContent(false);
+		query.setIsPublished(true);
+		List<BlogCustom> newBlogs = this.list(query, this::setQueryWrapper, BlogCustom.class);
+		
+		for (BlogCustom newBlog : newBlogs) {
 			if (!"".equals(newBlog.getPassword())) {
 				newBlog.setPrivacy(true);
 				newBlog.setPassword("");
@@ -111,8 +119,8 @@ public class BlogServiceImpl implements BlogService {
 				newBlog.setPrivacy(false);
 			}
 		}
-		redisService.saveListToValue(redisKey, newBlogList);
-		return newBlogList;
+		redisService.saveListToValue(redisKey, newBlogs);
+		return newBlogs;
 	}
 
 	@Override
@@ -156,7 +164,6 @@ public class BlogServiceImpl implements BlogService {
 			 * 2.删除 Redis DB 中 blogViewsMap 这个 key（或者直接清空对应的整个 DB）
 			 * 3.重新启动程序
 			 *
-			 * 具体请查看: https://github.com/youbo/NBlog/issues/58
 			 */
 			int view = (int) redisService.getValueByHashKey(redisKey, blogId);
 			blogInfo.setViews(view);
@@ -230,7 +237,12 @@ public class BlogServiceImpl implements BlogService {
 
 	@Override
 	public List<RandomBlog> getRandomBlogListByLimitNumAndIsPublishedAndIsRecommend() {
-		List<RandomBlog> randomBlogs = blogMapper.getRandomBlogListByLimitNumAndIsPublishedAndIsRecommend(randomBlogLimitNum);
+		BlogQuery query = new BlogQuery();
+		query.setIsPublished(true);
+		query.setIsRecommend(true);
+		query.setIsQueryContent(false);
+		
+		List<RandomBlog> randomBlogs = this.list(query, this::setQueryWrapper, RandomBlog.class);
 		for (RandomBlog randomBlog : randomBlogs) {
 			if (!"".equals(randomBlog.getPassword())) {
 				randomBlog.setPrivacy(true);
@@ -243,24 +255,21 @@ public class BlogServiceImpl implements BlogService {
 	}
 
 	private Map<Long, Integer> getBlogViewsMap() {
-		List<BlogView> blogViewList = blogMapper.getBlogViewsList();
-		Map<Long, Integer> blogViewsMap = new HashMap<>(128);
-		for (BlogView blogView : blogViewList) {
-			blogViewsMap.put(blogView.getId(), blogView.getViews());
-		}
-		return blogViewsMap;
+		return this.list(new BlogQuery(), this::setQueryWrapper, Blog::getId, Blog::getViews).stream().collect(Collectors.toMap(Blog::getId, Blog::getViews));
 	}
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void deleteBlogById(Long id) {
-		if (blogMapper.deleteBlogById(id) != 1) {
+		boolean isRemove = this.remove(id);
+		if (!isRemove) {
 			throw new NotFoundException("该博客不存在");
 		}
 		deleteBlogRedisCache();
 		redisService.deleteByHashKey(RedisKeyConstants.BLOG_VIEWS_MAP, id);
 	}
 
+	// TODO 移BlogTagService
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void deleteBlogTagByBlogId(Long blogId) {
@@ -271,14 +280,16 @@ public class BlogServiceImpl implements BlogService {
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void saveBlog(Blog blog) {
-		if (blogMapper.saveBlog(blog) != 1) {
+	public void saveBlog(BlogCustom blog) {
+		boolean isSave = this.save(blog);
+		if (!isSave) {
 			throw new PersistenceException("添加博客失败");
 		}
 		redisService.saveKVToHash(RedisKeyConstants.BLOG_VIEWS_MAP, blog.getId(), 0);
 		deleteBlogRedisCache();
 	}
 
+	// TODO 移BlogTagService
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void saveBlogTag(Long blogId, Long tagId) {
@@ -287,14 +298,7 @@ public class BlogServiceImpl implements BlogService {
 		}
 	}
 
-	@Transactional(rollbackFor = Exception.class)
-	@Override
-	public void updateBlogRecommendById(Long blogId, Boolean recommend) {
-		if (blogMapper.updateBlogRecommendById(blogId, recommend) != 1) {
-			throw new PersistenceException("操作失败");
-		}
-	}
-
+	// TODO 删除BlogVisibility对象
 	@Transactional(rollbackFor = Exception.class)
 	@Override
 	public void updateBlogVisibilityById(Long blogId, BlogVisibility blogVisibility) {
@@ -308,10 +312,8 @@ public class BlogServiceImpl implements BlogService {
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void updateBlogTopById(Long blogId, Boolean top) {
-		if (blogMapper.updateBlogTopById(blogId, top) != 1) {
-			throw new PersistenceException("操作失败");
-		}
+	public void updateBlogById(Blog blog) {
+		this.update(blog);
 		redisService.deleteCacheByKey(RedisKeyConstants.HOME_BLOG_INFO_LIST);
 	}
 
@@ -322,15 +324,13 @@ public class BlogServiceImpl implements BlogService {
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void updateViews(Long blogId, Integer views) {
-		if (blogMapper.updateViews(blogId, views) != 1) {
-			throw new PersistenceException("更新失败");
-		}
+	public void updateBlogsById(List<Blog> blogs) {
+		this.update(blogs);
 	}
 
 	@Override
-	public com.youbo.entity.Blog getBlogById(Long id) {
-		com.youbo.entity.Blog blog = blogMapper.getBlogById(id);
+	public BlogCustom getBlogById(Long id) {
+		BlogCustom blog = this.get(id, BlogCustom.class);
 		if (blog == null) {
 			throw new NotFoundException("博客不存在");
 		}
@@ -368,29 +368,29 @@ public class BlogServiceImpl implements BlogService {
 
 	@Override
 	public String getBlogPassword(Long blogId) {
-		return blogMapper.getBlogPassword(blogId);
+		return this.get(blogId, Blog::getPassword);
 	}
 
 	@Transactional(rollbackFor = Exception.class)
 	@Override
-	public void updateBlog(Blog blog) {
-		if (blogMapper.updateBlog(blog) != 1) {
-			throw new PersistenceException("更新博客失败");
-		}
+	public void updateBlog(BlogCustom blog) {
+		
+		this.update(blog);
 		deleteBlogRedisCache();
 		redisService.saveKVToHash(RedisKeyConstants.BLOG_VIEWS_MAP, blog.getId(), blog.getViews());
 	}
 
 	@Override
 	public int countBlogByIsPublished() {
-		return blogMapper.countBlogByIsPublished();
+		return this.count(Blog::getIsPublished, true);
 	}
 
 	@Override
 	public int countBlogByCategoryId(Long categoryId) {
-		return blogMapper.countBlogByCategoryId(categoryId);
+		return this.count(Blog::getCategoryId, categoryId);
 	}
 
+	// TODO blog_tag
 	@Override
 	public int countBlogByTagId(Long tagId) {
 		return blogMapper.countBlogByTagId(tagId);
@@ -398,12 +398,18 @@ public class BlogServiceImpl implements BlogService {
 
 	@Override
 	public Boolean getCommentEnabledByBlogId(Long blogId) {
-		return blogMapper.getCommentEnabledByBlogId(blogId);
+		return this.get(blogId, Blog::getIsCommentEnabled);
 	}
 
 	@Override
 	public Boolean getPublishedByBlogId(Long blogId) {
-		return blogMapper.getPublishedByBlogId(blogId);
+		return this.get(blogId, Blog::getIsPublished);
+	}
+
+	@Override
+	public PageDTO<BlogCustom> getBlogList(BlogQuery query)
+	{
+		return this.page(query, this::setQueryWrapper, BlogCustom.class);
 	}
 
 	/**
@@ -413,5 +419,32 @@ public class BlogServiceImpl implements BlogService {
 		redisService.deleteCacheByKey(RedisKeyConstants.HOME_BLOG_INFO_LIST);
 		redisService.deleteCacheByKey(RedisKeyConstants.NEW_BLOG_LIST);
 		redisService.deleteCacheByKey(RedisKeyConstants.ARCHIVE_BLOG_MAP);
+	}
+
+	private LambdaQueryWrapper<Blog> setQueryWrapper(BlogQuery query) {
+		LambdaQueryWrapper<Blog> queryWrapper = Wrappers.lambdaQuery();
+		
+		// 默认根据id降序
+		queryWrapper.orderByDesc(Blog::getId);
+		
+		if (query == null)
+		{
+			return queryWrapper;
+		}
+
+		// 是否查询博客内容
+		if (BooleanUtils.isFalse(query.getIsQueryContent()))
+		{
+			queryWrapper.select(Blog.class, i -> !"content".equals(i.getColumn()));
+		}
+		
+		this.eq(queryWrapper, Blog::getCategoryId, query.getCategoryId());
+		this.eq(queryWrapper, Blog::getIsPublished, query.getIsPublished());
+		this.eq(queryWrapper, Blog::getPassword, query.getPassword());
+		
+		this.like(queryWrapper, Blog::getTitle, query.getTitle());
+		this.like(queryWrapper, Blog::getContent, query.getContent());
+		
+		return queryWrapper;
 	}
 }

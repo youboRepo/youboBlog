@@ -1,11 +1,16 @@
 package com.youbo.task;
 
+import cn.hutool.core.map.MapUtil;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.youbo.constant.RedisKeyConstants;
+import com.youbo.entity.Blog;
 import com.youbo.service.BlogService;
 import com.youbo.service.RedisService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -26,11 +31,24 @@ public class RedisSyncScheduleTask {
 	 */
 	public void syncBlogViewsToDatabase() {
 		String redisKey = RedisKeyConstants.BLOG_VIEWS_MAP;
-		Map blogViewsMap = redisService.getMapByHash(redisKey);
-		Set<Integer> keys = blogViewsMap.keySet();
-		for (Integer key : keys) {
-			Integer views = (Integer) blogViewsMap.get(key);
-			blogService.updateViews(key.longValue(), views);
+		Map<Long, Integer> blogViewsMap = redisService.getMapByHash(redisKey);
+		
+		if (MapUtil.isEmpty(blogViewsMap)) {
+			return;
+		}
+		
+		List<Blog> updateBlogs = new ArrayList<>();
+		blogViewsMap.forEach((blogId, views) -> {
+			if (blogId != null) {
+				Blog blog = new Blog();
+				blog.setId(blogId);
+				blog.setViews(views);
+				updateBlogs.add(blog);	
+			}
+		});
+		
+		if (CollectionUtils.isNotEmpty(updateBlogs)) {
+			blogService.updateBlogsById(updateBlogs);
 		}
 	}
 }

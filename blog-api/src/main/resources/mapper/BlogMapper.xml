@@ -66,9 +66,9 @@
     <!--按关键字根据文章内容搜索公开且无密码保护的博客文章-->
     <select id="getSearchBlogListByQueryAndIsPublished" resultMap="searchBlog">
         <bind name="queryPattern" value="'%' + query + '%'"/>
-        select id, title, content
-        from blog
-        where is_published=true and password='' and content like #{queryPattern}
+        SELECT id, title, content
+        FROM blog
+        WHERE is_published= true AND password='' AND content LIKE #{queryPattern}
     </select>
 
     <resultMap id="blogIdAndTitle" type="com.youbo.model.vo.BlogIdAndTitle">
@@ -192,7 +192,7 @@
     </insert>
 
     <!--添加博客-->
-    <insert id="saveBlog" parameterType="com.youbo.model.dto.Blog" useGeneratedKeys="true" keyProperty="id">
+    <insert id="saveBlog" parameterType="com.youbo.model.dto.BlogCustom" useGeneratedKeys="true" keyProperty="id">
         insert into blog (title, first_picture, content, description, is_published, is_recommend, is_appreciation, is_comment_enabled,
         is_top, create_time, update_time, views, words, read_time, category_id, user_id, password)
         values (#{title}, #{firstPicture}, #{content}, #{description}, #{published}, #{recommend}, #{appreciation}, #{commentEnabled},
