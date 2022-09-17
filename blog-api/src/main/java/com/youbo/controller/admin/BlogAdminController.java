@@ -1,6 +1,5 @@
 package com.youbo.controller.admin;
 
-import com.github.pagehelper.PageInfo;
 import com.youbo.annotation.OperationLogger;
 import com.youbo.entity.Blog;
 import com.youbo.model.dto.BlogCustom;
@@ -29,7 +28,6 @@ import com.youbo.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,8 +55,8 @@ public class BlogAdminController {
 	 * @param query
 	 * @return
 	 */
-	@GetMapping("/blogs")
-	public Result blogs(@RequestParam BlogQuery query) {
+	@PostMapping("/blogs")
+	public Result blogs(@RequestBody BlogQuery query) {
 		PageDTO<BlogCustom> page = blogService.getBlogList(query);
 		List<Category> categories = categoryService.getCategoryList();
 		return Result.ok("请求成功", page).put("categories", categories);
@@ -200,6 +198,7 @@ public class BlogAdminController {
 		if (cate instanceof Integer) {//选择了已存在的分类
 			Category c = categoryService.getCategoryById(((Integer) cate).longValue());
 			blog.setCategory(c);
+			blog.setCategoryId(c.getId());
 		} else if (cate instanceof String) {//添加新分类
 			//查询分类是否已存在
 			Category category = categoryService.getCategoryByName((String) cate);
@@ -210,6 +209,7 @@ public class BlogAdminController {
 			c.setName((String) cate);
 			categoryService.saveCategory(c);
 			blog.setCategory(c);
+			blog.setCategoryId(c.getId());
 		} else {
 			return Result.error("分类不正确");
 		}

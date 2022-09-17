@@ -25,16 +25,16 @@ public class RedisSerializeConfig {
 	 * @param redisConnectionFactory
 	 * @return
 	 */
-/*	@Bean
+	@Bean
 	public RedisTemplate<Object, Object> jsonRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
 		RedisTemplate<Object, Object> template = new RedisTemplate<>();
 		template.setConnectionFactory(redisConnectionFactory);
 		Jackson2JsonRedisSerializer<Object> serializer = new Jackson2JsonRedisSerializer<Object>(Object.class);
 		template.setDefaultSerializer(serializer);
 		return template;
-	}*/
+	}
 	
-	@Bean
+	/*@Bean
 	@Primary
 	@SuppressWarnings("all")
 	public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
@@ -59,5 +59,5 @@ public class RedisSerializeConfig {
 		template.setConnectionFactory(redisConnectionFactory);
 
 		return template;
-	}
+	}*/
 }
