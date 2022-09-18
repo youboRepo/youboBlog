@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.youbo.entity.Category;
 import com.youbo.entity.Tag;
-import com.youbo.model.vo.NewBlog;
 import com.youbo.model.vo.RandomBlog;
 import com.youbo.model.vo.Result;
 import com.youbo.service.BlogService;
