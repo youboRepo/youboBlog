@@ -1,7 +1,5 @@
 package com.youbo.util;
 
-import org.thymeleaf.expression.Lists;
-
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ArrayList;
@@ -171,5 +169,25 @@ public class StringUtils {
 	public static List<Long> splitLongList(String text)
 	{
 		return splitLongList(text, DEFAULT_SPLIT_REGEX);
+	}
+
+	/**
+	 * <p>Strips any of a set of characters from the start and end of a String.
+	 * This is similar to {@link String#trim()} but allows the characters
+	 * to be stripped to be controlled.</p>
+	 *
+	 * @param str the String to remove characters from, may be null
+	 * @param prefixStripChars the characters to remove from start of str, null treated as
+	 *                        whitespace
+	 * @param suffixStripChars the characters to remove from end of str, null treated as whitespace
+	 * @return the stripped String, {@code null} if null String input
+	 */
+	public static String strip(String str, final String prefixStripChars,
+							   final String suffixStripChars) {
+		if (org.apache.commons.lang3.StringUtils.isEmpty(str)) {
+			return str;
+		}
+		str = org.apache.commons.lang3.StringUtils.stripStart(str, prefixStripChars);
+		return org.apache.commons.lang3.StringUtils.stripEnd(str, suffixStripChars);
 	}
 }

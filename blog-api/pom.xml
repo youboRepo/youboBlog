@@ -185,6 +185,14 @@
             <artifactId>hutool-all</artifactId>
             <version>5.7.4</version>
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.vladsch.flexmark/flexmark-all -->
+        <dependency>
+            <groupId>com.vladsch.flexmark</groupId>
+            <artifactId>flexmark-all</artifactId>
+            <version>0.62.2</version>
+        </dependency>
+
     </dependencies>
 
     <build>

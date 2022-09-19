@@ -1,7 +1,9 @@
 package com.youbo.controller;
 
+import cn.hutool.core.io.file.FileNameUtil;
 import com.youbo.annotation.VisitLogger;
 import com.youbo.constant.JwtConstants;
+import com.youbo.exception.BadRequestException;
 import com.youbo.model.dto.BlogCustom;
 import com.youbo.query.BlogQuery;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import com.youbo.entity.User;
 import com.youbo.enums.VisitBehavior;
@@ -23,7 +26,10 @@ import com.youbo.service.BlogService;
 import com.youbo.service.impl.UserServiceImpl;
 import com.youbo.util.JwtUtils;
 import com.youbo.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -132,5 +138,22 @@ public class BlogController {
 		query.setPassword("");
 		List<BlogCustom> blogs = blogService.getSearchBlogListByQueryAndIsPublished(query);
 		return Result.ok("获取成功", blogs);
+	}
+	
+	@PostMapping("import/markdown")
+	public Result importMarkdown(@RequestPart("file") MultipartFile file) throws IOException {
+		List<String> supportType = Arrays.asList("md", "markdown", "mdown");
+		String filename = file.getOriginalFilename();
+		if (StringUtils.isEmpty(filename)) {
+			throw new BadRequestException("文件名不可为空");
+		}
+
+		String suffix = FileNameUtil.getSuffix(filename);
+		
+		if (!supportType.contains(suffix)) {
+			throw new BadRequestException("不支持" + (StringUtils.isEmpty(suffix) ? "未知" + suffix) + "格式的文件上传");
+		}
+		
+		Long blogId = blogService.importMarkdown(file);
 	}
 }

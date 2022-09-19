@@ -5,13 +5,13 @@ import com.youbo.model.dto.BlogCustom;
 import com.youbo.model.dto.BlogVisibility;
 import com.youbo.model.vo.BlogDetail;
 import com.youbo.model.vo.BlogInfo;
-import com.youbo.model.vo.NewBlog;
 import com.youbo.model.vo.PageResult;
 import com.youbo.model.vo.RandomBlog;
-import com.youbo.model.vo.SearchBlog;
 import com.youbo.query.BlogQuery;
 import com.youbo.query.PageDTO;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -69,4 +69,13 @@ public interface BlogService {
 	Boolean getPublishedByBlogId(Long blogId);
 
     PageDTO<BlogCustom> getBlogList(BlogQuery query);
+	
+	/**
+	 * markdown文件导入
+	 *
+	 * @param file file
+	 * @return base post detail dto
+	 * @throws IOException throws IOException
+	 */
+	Long importMarkdown(MultipartFile file) throws IOException;
 }
