@@ -151,9 +151,10 @@ public class BlogController {
 		String suffix = FileNameUtil.getSuffix(filename);
 		
 		if (!supportType.contains(suffix)) {
-			throw new BadRequestException("不支持" + (StringUtils.isEmpty(suffix) ? "未知" + suffix) + "格式的文件上传");
+			throw new BadRequestException("不支持" + (StringUtils.isEmpty(suffix) ? "未知" : suffix) + "格式的文件上传");
 		}
 		
 		Long blogId = blogService.importMarkdown(file);
+		return Result.ok("导入成功", blogId);
 	}
 }
